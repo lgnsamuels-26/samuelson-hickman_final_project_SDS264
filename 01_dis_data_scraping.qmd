@@ -11,7 +11,7 @@ editor: visual
 library(tidyverse)
 library(rvest)
 library(polite)
-
+library(pdftools)
 ```
 
 ## DIS Website Session
@@ -35,8 +35,36 @@ dis <- read_html("https://disabroad.org/course-finder/?type=core-course%2Carchit
 session <- bow("https://disabroad.org/course-finder/?type=core-course%2Carchitecture-design-summer-session%2Carctic-experiential-studies%2Cfurniture-design-summer-sessions%2Csummer-session-2&term=semester", force = TRUE)
 
 course_titles <- scrape(session) |>
-  html_nodes("div.card:nth-child(5) > a:nth-child(1)") |>
+  html_nodes("<a class="card--course__link"") |>
   html_text()
 course_titles
 ```
+
+```{r}
+download.file("http://arxiv.org/pdf/1403.2805.pdf", "data/1403.2805.pdf", mode = "wb")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
