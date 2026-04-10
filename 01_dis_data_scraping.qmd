@@ -32,16 +32,36 @@ dis <- read_html("https://disabroad.org/course-finder/?term=semester&type=core-c
 3. `html_text()`.  Extract content of interest from nodes.  Might also use `html_table()` etc.
 
 ```{r}
-session <- bow("https://disabroad.org/course-finder/?term=semester&type=core-course", force = TRUE)
+session <- bow("https://disabroad.org/course-finder/", force = TRUE)
+
+course_titles <- scrape(session) |>
+  html_nodes("div.card:nth-child(1) > div:nth-child(2) > h2:nth-child(2)") |>
+  html_text()
+course_titles
 
 course_titles <- scrape(session) |>
   html_nodes(".card--course__link") |>
   html_text()
+
+course_links <- scrape(session) |>
+  html_nodes(".card--course__link") |>
+  html_attr("href")
+
+courses <- tibble(
+  title = course_titles,
+  link  = course_links
+)
+
+library(rvest)
+
+course_titles <- scrape(session) |>
+  html_elements("div.card:nth-child(3)") |>
+  html_text2()
+
 course_titles
-
-as.tibble(course_titles)
-
-session_1course <- 
 ```
 
+```{r}
+course 
+```
 
