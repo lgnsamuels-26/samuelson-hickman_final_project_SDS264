@@ -41,8 +41,14 @@ course_titles
 ```
 
 ```{r}
-download.file("http://arxiv.org/pdf/1403.2805.pdf", "data/1403.2805.pdf", mode = "wb")
+
+download.file("https://disabroad.org/wp-content/uploads/2024/11/dis-computer-science1.pdf", mode = "wb")
+
+pdftools::pdf_text(pdf = "https://disabroad.org/wp-content/uploads/2024/11/dis-computer-science1.pdf")
+
+pdftools::pdf_text(pdf = "file:///C:/Users/maxhi/Downloads/DIS%20SUMMER%20CATALOG.pdf")
 ```
+
 
 
 
