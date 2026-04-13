@@ -1,0 +1,79 @@
+---
+title: "MH_Code_for_scraping"
+format: html
+editor: visual
+---
+
+---
+title: "01_dis_data_scraping"
+format: html
+editor: visual
+---
+## Libraries
+
+```{r}
+#| include: FALSE
+
+library(tidyverse)
+library(rvest)
+library(polite)
+library(pdftools)
+```
+
+## DIS Website Session
+
+```{r}
+# check that scraping is allowed (Step 0)
+robotstxt::paths_allowed("https://www.dnr.state.mn.us/state_parks/list_alpha.html")
+
+# Step 1: Download the HTML and turn it into an XML file with read_html()
+MNDRN <- read_html("https://www.dnr.state.mn.us/state_parks/list_alpha.html")
+MNDRN
+```
+
+## Recall the four steps to scraping data with functions in the `rvest` library:
+
+0. `robotstxt::paths_allowed()` Check if the website allows scraping, and then make sure we scrape "politely"
+1. `read_html()`.  Input the URL containing the data and turn the html code into an XML file (another markup format that's easier to work with).
+2. `html_nodes()`.  Extract specific nodes from the XML file by using the CSS path that leads to the content of interest. (use css="table" for tables.)
+3. `html_text()`.  Extract content of interest from nodes.  Might also use `html_table()` etc.
+
+```{r}
+session <- bow("https://www.dnr.state.mn.us/state_parks/list_alpha.html", force = TRUE)
+
+MN_parks <- scrape(session) |>
+  html_nodes("a") |>
+  html_text()
+MN_parks
+```
+
+
+
+```{r}
+html_attr()
+
+
+
+.visit-content
+session <- bow("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=", force = TRUE)
+
+BLMCA <- scrape(session) |>
+  html_nodes(".visit-content") |>
+  html_text()
+BLMCA
+
+#starts at 
+BLMCA_Titles <- scrape(session) |>
+  html_nodes("a") |>
+  html_text()
+
+
+#starts at
+BLMCA_Description <- scrape(session) |>
+  html_nodes(".-body") |>
+  html_text()
+```
+
+
+
+
