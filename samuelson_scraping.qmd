@@ -10,11 +10,86 @@ editor: visual
 library(tidyverse)
 library(rvest)
 library(polite)
+
+library(tidyverse)
+library(stringr)
+library(httr2)
+library(httr)
+library(tidycensus)
+library(tmap)
 ```
 
 
 ```{r}
 # Step 1: Download the HTML and turn it into an XML file with read_html()
-nih <- read_html("https://www.nih.gov/news-events/news-releases")
+nih <- read_html("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=")
+
+.visit-content
+session <- bow("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=", force = TRUE)
+
+BLM_names<-scrape(session) |>
+  html_elements("a[hreflang='en']") |>
+  html_attr("href")
+
+url1 <- str_c("https://www.blm.gov"
+                , BLM_names[1])
+
+one_park <- GET(url1)|>
+  as.tibble()
+
+details <- content(one_park, "parse")
+
+
+_____________________________________________
+
+css<-  c(".-address-1",".-address-2",".-city",".-state",".-zip-code")
+
+BLM_junk <- scrape(penite_canyon)|>
+  html_nodes(css) |>
+  html_text()
+BLM_junk
+  
+
+  for(i in 1:5){
+  scrape(penite_canyon)|>
+  html_nodes(css[i,1])|>
+  html_text()}
+
+ url <- (css[i])
+  onemovie <- GET(url)
+  details <- content(movies, "parse")
+  omdb[i,1] <- details$Title
+  omdb[i,2] <- details$imdbRating  # rating
+  omdb[i,3] <- details$Genre
+
+    as.tibble()|>
+  filter(between(row_number(), 8, 57))
+
+BLM_junk_more<- BLMCA <- scurl1BLM_junk_more<- BLMCA <- scrape(session) |>
+  html_nodes(".-title") |>
+  html_text()|>
+    as.tibble()
+
+BLM_super_junk<- bind_cols(BLM_junk_more, BLM_junk)
+
+BLMCA
+
+penite_canyon<- bow("https://www.blm.gov/visit/penitente-canyon", force=TRUE)
+
+
+
+https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=&page=1
+```
+```{r}
+page <- read_html("https://www.blm.gov/visit/penitente-canyon")
+
+results<- for(i in 1:length(css)){
+  result <- page |>
+    html_nodes(css[i]) |>
+    html_text()
+print(result)
+}
+
+results_junk<-as.tibble(results)
 ```
 
