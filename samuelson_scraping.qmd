@@ -1,0 +1,20 @@
+---
+title: "samuelson_scraping"
+format: html
+editor: visual
+---
+
+## libraries
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(polite)
+```
+
+
+```{r}
+# Step 1: Download the HTML and turn it into an XML file with read_html()
+nih <- read_html("https://www.nih.gov/news-events/news-releases")
+```
+
