@@ -61,7 +61,10 @@ BLMCA <- scrape(session) |>
   html_nodes(".visit-content") |>
   html_text()
 BLMCA
+```
 
+Now to clean the data
+```{r}
 #lines 161-210, always starts with "C(capitol letter). all are more than 1 word but there are some that might get included (lines 222-230 & 237-249 for example)
 BLMCA_Titles <- scrape(session) |>
   html_nodes("a") |>
@@ -73,6 +76,92 @@ BLMCA_Description <- scrape(session) |>
   html_nodes(".-body") |>
   html_text()
 BLMCA_Description
+
+
+#----------------------------- DOESN'T LIKE TO WORK
+
+
+get_text_from_page <- function(page, css_selector) {
+  page |> 
+    html_nodes(css_selector) |> 
+    html_text()
+}
+
+
+scrape_page <- function(url) {
+  Sys.sleep(2)
+  session <- bow(url, force = TRUE)
+  page <- scrape(session)
+  BLMC_Titles <- get_text_from_page(page, "a")
+  BLMC_Description <- get_text_from_page(page, ".-body")
+  tibble(title = BLMC_Titles, description = BLMC_Description) |>
+    mutate(description = str_extract(BLMC_Description, "^\"  [A-Z]"),
+         title = str_extract(items, "(?<=\\[)\\d+(?=\\])")
+    )
+
+}
+
+scrape_page("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=")
+
+
+```
+
+```{r}
+session <- bow("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=", force = TRUE)
+
+BLMC <- scrape(session) |>
+  html_nodes(".visit-content") |>
+  html_text()
+BLMC
+
+get_text_from_page <- function(page, css_selector) {
+  page |> 
+    html_nodes(css_selector) |> 
+    html_text()
+}
+
+
+scrape_page <- function(url) {
+  Sys.sleep(2)
+  session <- bow(url, force = TRUE)
+  page <- scrape(session)
+  BLMC <- get_text_from_page(page, ".visit-content")
+  tibble(Title = BLMC, description = BLMC) |>
+    mutate(Title = str_replace_all(BLMC, "^(*)(\n)$", "\\1"),
+         Description = str_replace_all(BLMC, "^(*)(\n\n\n)$", "\\1")
+    )
+
+}
+
+scrape_page("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=")
+
+#-----------------------
+
+session <- bow("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=", force = TRUE)
+
+BLMC_title <- scrape(session) |>
+  html_nodes(".-title") |>
+  html_text()
+BLMC
+```
+
+```{r}
+#| eval: FALSE
+
+# use tibble() to put multiple columns together into a tibble
+BLM_title_desc <- tibble(title = BLMCA_Titles, 
+                    description = BLMCA_Description)
+BLM_title_desc
+
+nih_description
+# now clean the data
+nih_top10 <- nih_top10 |>
+  mutate(Date = str_extract(nih_description, "^.*(  )"),
+         Date = mdy(str_sub(Date, end = -3)),
+         description = str_extract(description, "(  ).*$"),
+         description = str_trim(description)
+  )
+nih_top10
 ```
 
 
