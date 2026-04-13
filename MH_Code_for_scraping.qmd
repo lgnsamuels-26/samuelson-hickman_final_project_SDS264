@@ -62,16 +62,17 @@ BLMCA <- scrape(session) |>
   html_text()
 BLMCA
 
-#starts at 
+#lines 161-210, always starts with "C(capitol letter). all are more than 1 word but there are some that might get included (lines 222-230 & 237-249 for example)
 BLMCA_Titles <- scrape(session) |>
   html_nodes("a") |>
   html_text()
+BLMCA_Titles
 
-
-#starts at
+#lines 8-57, always starts with "  C(capitol letter)
 BLMCA_Description <- scrape(session) |>
   html_nodes(".-body") |>
   html_text()
+BLMCA_Description
 ```
 
 
