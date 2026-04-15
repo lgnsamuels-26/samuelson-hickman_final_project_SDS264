@@ -1,0 +1,128 @@
+---
+title: "Mini_Project_2_StageIII"
+author: "Logan Samuelson and Max Hickman"
+format: pdf
+editor_options: 
+  chunk_output_type: console
+---
+
+## Libraries
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(polite)
+library(tidyverse)
+library(stringr)
+```
+
+
+## Starting Up and Getting URLS
+```{r}
+# Step 0: Check if access works
+robotstxt::paths_allowed("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=&page=")
+# TRUE
+
+# This scrapes the page for all the links to each BLM location in Colorado
+scrape_links <- function(link_pages) { # This takes a search page
+  Sys.sleep(5) # This abides by the 5 second delay rule
+  session <- bow(link_pages, force = TRUE) # This bows and starts a session
+  page <- scrape(session) # This scrapes the session
+  BLM_name <- page |> html_elements("a[hreflang='en']") |> html_attr("href") # This extracts the end of the link, the "href" attribute, and saves the name
+  tibble(link = str_c("https://www.blm.gov", BLM_name)) 
+  # This saves the full link
+}
+
+park_pages <- vector("list", length = 4) 
+# This says output a list vector with 4 rows
+for (i in 0:3) { # This says to run for pages 0-3
+  link_pages <- str_c("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=&page=", i) 
+# This combines search page with page number
+  park_pages[[i + 1]] <- scrape_links(link_pages) 
+# This crawls each page and applies the scrape links function
+}
+
+df_pages <- bind_rows(park_pages) # Thus binds every vector from park_pages
+head(df_pages)
+```
+
+## Text Scraping for the Dataset
+
+```{r}
+## From 10_web_scraping
+
+# Helper function to reduce html_nodes() |> html_text() code duplication
+get_text_from_page <- function(page, css_selector) { 
+# This looks at each page and the given selector and extracts text
+  page |> 
+    html_nodes(css_selector) |> 
+    html_text()
+}
+
+add_na <- function(x) { 
+# This takes a string and if it is length = 0, it outputs an NA, or returns the string itself
+  if (length(x) == 0) NA else x
+}
+
+# Main function to scrape and tidy desired attributes
+scrape_page <- function(url) {
+  Sys.sleep(5) # reduces lag on website
+  session <- bow(url, force = TRUE) # checks in to the website
+  page <- scrape(session) # scrape
+  
+  title <- get_text_from_page(page, ".-title")
+  address_1 <- get_text_from_page(page,".-address-1")
+  address_2 <- get_text_from_page(page,".-address-2")
+  city <- get_text_from_page(page,".-city")
+  state <- get_text_from_page(page,".-state")
+  zip <-  get_text_from_page(page, ".-zip-code")
+  lat <- get_text_from_page(page, ".views-field-field-latitude")
+  long <- get_text_from_page(page, ".views-field-field-longitude")
+  phone <- get_text_from_page(page, ".views-field-field-phone")
+  description<- get_text_from_page(page, ".layout__region--first > div:nth-child(3) > div:nth-child(1)")
+  directions <- get_text_from_page(page, ".-directions")
+  activities <- get_text_from_page(page, ".-paragraph-activities")
+  
+  tibble(BLM_Name=add_na(title), 
+         Address_1= add_na(address_1),
+         Address_2= add_na(address_2),
+         City= add_na(city), 
+         State= add_na(state), 
+         Zip_Code= add_na(zip),
+         Latitude = add_na(lat),
+         Longitude = add_na(long),
+         Phone_Number = add_na(phone),
+         Description = add_na(description),
+         Directions = add_na(directions),
+         Activities = add_na(activities))|>
+      mutate(BLM_Name = word(BLM_Name, 1, sep = fixed('|')), 
+      # Extracts the word(s) before the | seperator
+             Activities = str_squish(Activities))
+      #Removes the \n between activities.
+}
+
+# Useful testing frame for the above function
+test_page<- scrape_page("https://www.blm.gov/visit/vale-tears-wsa")
+
+# Collects the scraped info for every page/location
+park_addresses <- vector("list", length = 151) #outputs a vector
+for (i in 1:151) {
+  park_addresses[[i]] <- scrape_page(df_pages$link[i])
+}
+
+# This makes our dataframe of park information
+df_addresses <- bind_rows(park_addresses)
+
+# This removes duplicated rows. Only three locations were effected
+df_addresses <- df_addresses|>
+  distinct(BLM_Name, .keep_all = TRUE)
+
+head(df_addresses)
+
+```
+
+## Making a CSV
+```{r}
+write.csv(df_addresses, "blm_colorado.csv")
+```
+
