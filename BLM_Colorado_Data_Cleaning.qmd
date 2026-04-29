@@ -4,23 +4,42 @@ format: html
 editor: visual
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
-1 + 1
+library(tidyverse)
+library(rvest)
+library(polite)
+library(tidyverse)
+library(stringr)
+library(maps)
+library(mapview)
+library(tmap)
 ```
 
-You can add options to executable code like this
+
+## Code
 
 ```{r}
-#| echo: false
-2 * 2
+blm_colorado <- read.csv("~/samuelson-hickman_test/blm_colorado.csv")
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+## Remove Unneeded Columns and Add Activities Columns
+
+```{r}
+blm_colorado_2 <- blm_colorado |>
+  mutate(address = str_c(Address_1, Address_2, sep = " "),
+         )|>
+  select(-X)|>
+  group_by(Phone_Number)|>
+  mutate(ContactRegion = cur_group_id())|>
+  ungroup()
+
+listed_activities <- c("CAMPING")
+
+# Create a new column for each word
+for (word in listed_activities) {
+  blm_colorado_2 <- blm_colorado_2 |>
+    mutate(!!word := as.integer(str_detect(blm_colorado_2$Activities, word)))
+}
+
+```
+
