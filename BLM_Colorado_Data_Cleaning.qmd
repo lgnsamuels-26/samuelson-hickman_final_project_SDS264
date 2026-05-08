@@ -13,6 +13,8 @@ library(stringr)
 library(maps)
 library(mapview)
 library(tmap)
+library(tidytext)
+library(textdata)
 ```
 
 ## Code
@@ -25,12 +27,13 @@ blm_colorado <- read.csv("~/samuelson-hickman_test/blm_colorado.csv")
 
 ```{r}
 blm_colorado_2 <- blm_colorado |>
-  mutate(address = str_c(Address_1, Address_2, sep = " "),
-         )|>
+  mutate(address = str_c(Address_1, Address_2, sep = " "))|>
   select(-X)|>
   group_by(Phone_Number)|>
   mutate(ContactRegion = cur_group_id(),
-         Description = str_replace(Description, "^Overview",""))|>
+         Description = str_replace(Description, "^Overview",""),
+         Desc_Length = str_length(Description),
+         Dir_Length = str_length(Directions))|>
   ungroup()|>
   mutate(desc_length = str_count(Description))
 
@@ -48,5 +51,13 @@ blm_colorado_2|>
 
 blm_colorado_2<-blm_colorado_2|>
   mutate(act_count = count("CAMPING", "BACKPACKING")
+         
+blm_colorado_3 <- blm_colorado_2 |>
+    unnest_tokens(word, Description) |>
+  anti_join(stop_words)|>
+  group_by(BLM_Name)|>
+  summarise(
+    desc_length = sum(word, by = BLM_Name)
+  )
 
 ```
