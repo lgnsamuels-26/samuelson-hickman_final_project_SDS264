@@ -81,69 +81,89 @@ BLMCA_Description
 #----------------------------- DOESN'T LIKE TO WORK
 
 
-get_text_from_page <- function(page, css_selector) {
-  page |> 
-    html_nodes(css_selector) |> 
-    html_text()
-}
+#get_text_from_page <- function(page, css_selector) {
+#  page |> 
+#    html_nodes(css_selector) |> 
+#    html_text()
+#}
 
 
-scrape_page <- function(url) {
-  Sys.sleep(2)
-  session <- bow(url, force = TRUE)
-  page <- scrape(session)
-  BLMC_Titles <- get_text_from_page(page, "a")
-  BLMC_Description <- get_text_from_page(page, ".-body")
-  tibble(title = BLMC_Titles, description = BLMC_Description) |>
-    mutate(description = str_extract(BLMC_Description, "^\"  [A-Z]"),
-         title = str_extract(items, "(?<=\\[)\\d+(?=\\])")
-    )
+#scrape_page <- function(url) {
+#  Sys.sleep(2)
+#  session <- bow(url, force = TRUE)
+#  page <- scrape(session)
+#  BLMC_Titles <- get_text_from_page(page, "a")
+#  BLMC_Description <- get_text_from_page(page, ".-body")
+#  tibble(title = BLMC_Titles, description = BLMC_Description) |>
+#    mutate(description = str_extract(BLMC_Description, "^\"  [A-Z]"),
+#         title = str_extract(items, "(?<=\\[)\\d+(?=\\])")
+#    )
 
-}
+#}
 
-scrape_page("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=")
+#scrape_page("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=")
 
 
 ```
 
 ```{r}
-session <- bow("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=", force = TRUE)
+#session <- bow("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=", force = TRUE)
 
-BLMC <- scrape(session) |>
-  html_nodes(".visit-content") |>
-  html_text()
-BLMC
+#BLMC <- scrape(session) |>
+#  html_nodes(".visit-content") |>
+#  html_text()
+#BLMC
 
-get_text_from_page <- function(page, css_selector) {
-  page |> 
-    html_nodes(css_selector) |> 
-    html_text()
-}
+#get_text_from_page <- function(page, css_selector) {
+#  page |> 
+#    html_nodes(css_selector) |> 
+#    html_text()
+#}
 
 
-scrape_page <- function(url) {
-  Sys.sleep(2)
-  session <- bow(url, force = TRUE)
-  page <- scrape(session)
-  BLMC <- get_text_from_page(page, ".visit-content")
-  tibble(Title = BLMC, description = BLMC) |>
-    mutate(Title = str_replace_all(BLMC, "^(*)(\n)$", "\\1"),
-         Description = str_replace_all(BLMC, "^(*)(\n\n\n)$", "\\1")
-    )
+#scrape_page <- function(url) {
+#  Sys.sleep(2)
+#  session <- bow(url, force = TRUE)
+#  page <- scrape(session)
+#  BLMC <- get_text_from_page(page, ".visit-content")
+#  tibble(Title = BLMC, description = BLMC) |>
+#    mutate(Title = str_replace_all(BLMC, "^(*)(\n)$", "\\1"),
+#         Description = str_replace_all(BLMC, "^(*)(\n\n\n)$", "\\1")
+#    ) 
+#}
 
-}
+#scrape_page("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=")
+```
 
-scrape_page("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=")
 
-#-----------------------
+ACTUAL STUFF
 
+```{r}
 session <- bow("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=", force = TRUE)
 
 BLMC_title <- scrape(session) |>
   html_nodes(".-title") |>
   html_text()
-BLMC
+
+BLMC_title
+
+BLMC_description <- scrape(session) |>
+  html_nodes(".-body") |>
+  html_text() |>
+  as.tibble() |>
+  filter(between(row_number(), 8, 57))
+
+view(BLMC_description)
+
+BLM_pages <- vector("list", length = 3)
+for (i in 0:2) {
+  url <- str_c("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=&pages=", i)
+  pages[[i + 1]] <- scrape_page(url)
+}
+
 ```
+
+
 
 ```{r}
 #| eval: FALSE
@@ -163,6 +183,98 @@ nih_top10 <- nih_top10 |>
   )
 nih_top10
 ```
+
+
+
+--------------------------------------------------
+```{r}
+library(tidyverse)
+library(rvest)
+library(polite)
+
+library(tidyverse)
+library(stringr)
+library(httr2)
+library(httr)
+library(tidycensus)
+library(tmap)
+```
+
+
+```{r}
+# Step 1: Download the HTML and turn it into an XML file with read_html()
+nih <- read_html("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=")
+
+.visit-content
+session <- bow("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=", force = TRUE)
+
+BLM_names<-scrape(session) |>
+  html_elements("a[hreflang='en']") |>
+  html_attr("href")
+
+url1 <- str_c("https://www.blm.gov"
+                , BLM_names[1])
+
+one_park <- GET(url1)|>
+  as.tibble()
+
+details <- content(one_park, "parse")
+
+
+_____________________________________________
+
+css<-  c(".-address-1",".-address-2",".-city",".-state",".-zip-code")
+
+BLM_junk <- scrape(penite_canyon)|>
+  html_nodes(css) |>
+  html_text()
+BLM_junk
+ 
+
+  for(i in 1:5){
+  scrape(penite_canyon)|>
+  html_nodes(css[i,1])|>
+  html_text()}
+
+ url <- (css[i])
+  onemovie <- GET(url)
+  details <- content(movies, "parse")
+  omdb[i,1] <- details$Title
+  omdb[i,2] <- details$imdbRating  # rating
+  omdb[i,3] <- details$Genre
+
+    as.tibble()|>
+  filter(between(row_number(), 8, 57))
+
+BLM_junk_more<- BLMCA <- scurl1BLM_junk_more<- BLMCA <- scrape(session) |>
+  html_nodes(".-title") |>
+  html_text()|>
+    as.tibble()
+
+BLM_super_junk<- bind_cols(BLM_junk_more, BLM_junk)
+
+BLMCA
+
+penite_canyon<- bow("https://www.blm.gov/visit/penitente-canyon", force=TRUE)
+
+
+
+https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=&page=1
+```
+```{r}
+page <- read_html("https://www.blm.gov/visit/penitente-canyon")
+
+results<- for(i in 1:length(css)){
+  result <- page |>
+    html_nodes(css[i]) |>
+    html_text()
+print(result)
+}
+
+results_junk<-as.tibble(results)
+```
+
+
 
 
 
