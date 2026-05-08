@@ -1,4 +1,4 @@
----
+------------------------------------------------------------------------
 
 title: "BLM_Colorado_Data_Variables"
 
@@ -6,7 +6,7 @@ format: html
 
 editor: visual
 
----
+------------------------------------------------------------------------
 
 ## Dataset
 
@@ -49,7 +49,7 @@ mutate(ContactRegion = cur_group_id())|>
 
 ungroup()
 
-listed_activities <- c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION","NON-MOTORIZED BOATING","DAY USE AREA", "PADDLE BOATING","WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING", "BACKPACKING","INTERPRETIVE PROGRAMS","WILDLIFE VIEWING","FISHING", "BOATING", "HORSEBACK RIDING","")
+listed_activities <- c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION","NON-MOTORIZED BOATING","DAY USE AREA", "PADDLE BOATING","WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING", "BACKPACKING","INTERPRETIVE PROGRAMS","WILDLIFE VIEWING","FISHING", "BOATING", "HORSEBACK RIDING","BIKING")
 
 # Column with binary for each word, DIDN'T WORK?
 
@@ -112,4 +112,3 @@ blm_colorado_2
 blm_colorado_2$Direction_Length_Words = stri_count_words(blm_colorado_2$Directions)
 
 ```
-
