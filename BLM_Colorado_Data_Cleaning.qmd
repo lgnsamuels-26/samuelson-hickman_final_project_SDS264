@@ -15,7 +15,6 @@ library(mapview)
 library(tmap)
 ```
 
-
 ## Code
 
 ```{r}
@@ -45,4 +44,3 @@ blm_colorado_2|>
   filter(is.na(Activities))
 
 ```
-
