@@ -19,7 +19,6 @@ library(tidycensus)
 library(tmap)
 ```
 
-
 ```{r}
 # Step 1: Download the HTML and turn it into an XML file with read_html()
 nih <- read_html("https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=")
@@ -80,6 +79,7 @@ penite_canyon<- bow("https://www.blm.gov/visit/penitente-canyon", force=TRUE)
 
 https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=&page=1
 ```
+
 ```{r}
 page <- read_html("https://www.blm.gov/visit/penitente-canyon")
 
@@ -92,4 +92,3 @@ print(result)
 
 results_junk<-as.tibble(results)
 ```
-
