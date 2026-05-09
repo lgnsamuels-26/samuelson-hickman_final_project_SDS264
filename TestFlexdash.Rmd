@@ -4,19 +4,44 @@ output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
+editor_options: 
+  chunk_output_type: inline
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
+library(tidyverse) 
+library(knitr)
+library(ggplot2)
 ```
 
+```{r}
+BLM <- read_csv("blm_colorado_3.csv")
+
+BLM <- BLM %>%
+  rename(Address1 = `Address_1`,
+         Address2 = `Address_2`,
+         ZipCode = `Zip_Code`,
+         PhoneNumber = `Phone_Number`,
+         PICKNICKING = `PICNICkING`,
+         DescriptionCharacterLength = `Description_Length`,
+         DescriptionLengthWords = `Description_Length_Words`,
+         DirectionCharacterLength = `Direction_Length`,
+         DirectionLengthWords = `Direction_Length_Words`)
+
+print(BLM)
+BLM
+```
 Column {data-width=650}
 -----------------------------------------------------------------------
 
 ### Chart A
 
 ```{r}
-
+BLM |>
+  ggplot(aes(HIKING)) +
+  geom_bar()
 ```
 
 Column {data-width=350}
