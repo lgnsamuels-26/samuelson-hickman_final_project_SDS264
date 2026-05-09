@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------
 
-title: "BLM_Colorado_Data_Variables"
+title: "BLM_colorado_Data_Variables"
 
 format: html
 
@@ -36,18 +36,87 @@ blm_colorado <- read.csv("blm_colorado.csv")
 ```{r}
 
 blm_colorado_2 <- blm_colorado |>
-  mutate(address = str_c(Address_1, Address_2, sep = " "),
-         )|>
-  select(-X)|>
-  group_by(Phone_Number)|>
-  mutate(ContactRegion = cur_group_id())|>
-  ungroup()
+  mutate(address = str_c(Address_1, Address_2, City, State, Zip_Code,sep = " "),
+        Description = str_replace(Description, "^Overview",""),
+         Zip_Code = as.character(Zip_Code))|>
+  select(-X)
 
 
-listed_activities <- c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION","NON-MOTORIZED BOATING","DAY USE AREA", "PADDLE BOATING","WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING", "BACKPACKING","INTERPRETIVE PROGRAMS","WILDLIFE VIEWING","FISHING", "BOATING", "HORSEBACK RIDING","HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES","SENIC DRIVE","PHOTOGRAPHY","CLIMBING", "HUNTING","WILDERNESS","INFORMATION SITE","PICNICING", "")
 
 
-# Column with binary for each word, DIDN'T WORK?
+```
+
+#filling stuff in
+```{r}
+blm_colorado_2[24,"Activities"] <- "INTERPRETIVE PROGRAMS"
+blm_colorado_2[51, "Activities"]<- "OFF HIGHWAY VEHICLES SECENIC DRIVE HIKING CLIMBING HORESEBACK RIDING INFORMATION SITE" 
+blm_colorado_2[55, "Activities"]<- "BIKING HIKING CLIMBING HORSEBACK RIDING " 
+blm_colorado_2[96, "Activities"]<- "CAMPING BIKING HIKING" 
+
+blm_colorado_2[106, "Address_1"] <- "Pollock Bench Trailhead"
+blm_colorado_2[106, "Zip_code"] <- "81521"
+
+blm_colorado_2[6, "Address_1"] <- "Bangs Canyon Trailhead (Mica Mine)"
+blm_colorado_2[6, "Address_2"] <- "Little Park Ct"
+blm_colorado_2[6, "Zip_code"] <- "81507"
+
+blm_colorado_2[1, "Address_1"] <- "North Fruita Desert"
+blm_colorado_2[1, "Address_2"] <- "18 Road Trailhead"
+blm_colorado_2[1, "State"] <- "Colorado"
+blm_colorado_2[1, "City"] <- "Loma"
+blm_colorado_2[1, "Zip_code"] <- "81524"
+
+blm_colorado_2[10, "Address_1"] <- "Black Canyon of the Gunnison Wilderness"
+blm_colorado_2[10, "State"] <- "Colorado"
+blm_colorado_2[10, "City"] <- "Crawford"
+blm_colorado_2[10, "Zip_code"] <- "81415"
+
+blm_colorado_2[39, "City"] <- "Fruita"
+blm_colorado_2[39, "Zip_code"] <- "81521"
+
+blm_colorado_2[44, "Address_2"]<-"5524 650 Rd"
+blm_colorado_2[44, "City"] <- "Delta"
+blm_colorado_2[44, "Zip_code"] <- "81416"
+
+blm_colorado_2[50, "Address_1"]<- "Fruita Paleo Loop Trailhead"
+blm_colorado_2[50, "State"]<-"Colorado"
+blm_colorado_2[50, "City"] <- "Fruita"
+blm_colorado_2[50, "Zip_code"] <- "81521"
+
+blm_colorado_2[53, "Address_1"] <- "Grand Valley OHV Recreation Area"
+blm_colorado_2[53, "Address_2"] <- "27 and 1/4 Rd"
+blm_colorado_2[53, "State"] <- "Colorado"
+blm_colorado_2[53, "City"] <- "Grand Junction"
+blm_colorado_2[53, "Zip_code"] <- "81506"
+
+blm_colorado_2[55, "Address_1"] <- "Hartman Rocks Recreation Area"
+blm_colorado_2[55, "Address_2"] <- "73 columbine Rd"
+blm_colorado_2[55, "State"] <- "Colorado"
+blm_colorado_2[55, "City"] <- "Gunnison"
+blm_colorado_2[55, "Zip_code"] <- "81230"
+
+blm_colorado_2[84, "City"] <- "Mack"
+blm_colorado_2[84, "Zip_code"] <- "81525"
+
+blm_colorado_2[85, "City"] <- "Fruita"
+blm_colorado_2[85, "Zip_code"] <- "81521"
+
+
+blm_colorado_2[95, "Address_1"] <- "North Fruita Desert"
+blm_colorado_2[95, "Address_2"] <- "18 Road Trailhead"
+blm_colorado_2[95, "State"] <- "Colorado"
+blm_colorado_2[95, "City"] <- "Loma"
+blm_colorado_2[95, "Zip_code"] <- "81524"
+
+```
+
+#Var. 1 Binary of Each Activity
+
+```{r}
+listed_activities <- c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION","NON-MOTORIZED BOATING","DAY USE AREA", "PADDLE BOATING","WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING", "BACKPACKING","INTERPRETIVE PROGRAMS","WILDLIFE VIEWING","FISHING", "BOATING", "HORSEBACK RIDING","HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES","SENIC DRIVE","PHOTOGRAPHY","CLIMBING", "HUNTING","WILDERNESS","INFORMATION SITE","PICNICkING")
+
+
+# column with binary for each word, DIDN'T WORK?
 
 for (word in listed_activities) {
 blm_colorado_2 <- blm_colorado_2 |>
@@ -58,30 +127,61 @@ mutate(!!word := as.integer(str_detect(blm_colorado_2$Activities, word)))
 blm_colorado_2|>
 
 filter(is.na(Activities))
-
 ```
 
-#Var. 1 Binary of Each Activity
-
-```{r}
-blm_colorado_2
-```
-
-Already exists?
 
 #Var. 2 Sum of Activities Offered
 
 ```{r}
 
-blm_colorado_2 |>
-
-sum(`CAMPING`, `WATER SPORTS`, `ENVIRONMENTAL EDUCATION`, `NON-MOTORIZED BOATING`, `DAY USE AREA`, `PADDLE BOATING`, `WATER ACCESS`, RAFTING, `WHITEWATER RAFTING`, BIRDING, BACKPACKING, `INTERPRETIVE PROGRAMS`, `WILDLIFE VIEWING`, FISHING, BOATING, `HORSEBACK RIDING`)
+blm_colorado_2 <- blm_colorado_2|>
+  mutate(total_activities = rowSums(across(c(15:40))))
 
 ```
 
 #Var. 3 Type of Attraction
 
+```{r}
+#The idea with these vectors is to create names for each attraction type with the equal sign. The first vector is using or statements to condense similar attractions. The second vector is raw, but could be the same form. The setNames command looks at the second raw vector and says, for every attraction, let its name be the same value. Both vectors are combined into attraction_type and then the names are all combined into a string. 
+
+categories <- c(
+  "Backcountry|Wilderness"          = "Wilderness",
+  "Recreation Site|Rec Site"        = "Recreation Site",
+  "Historic District|Museum"        = "Historic Site",
+  "Boat Launch|Boat Ramp"           = "Boat Launch",
+  "Trailhead|Trail System|Trail"    = "Trail"
+)
+
+labels <- c(
+  "Road", "RMZ", "WSA", "OHV", "Fishing Access",
+  "National Monument", "community Site", "River Access",
+  "Byway", "Day Use Area", "SRMA", "Management Area",
+  "Campground", "conservation Area", "HMA"
+)
+label_set <- setNames(labels, labels)
+
+attraction_type <- c(categories, label_set)
+
+match <- str_c(names(attraction_type), collapse = "|")
+
+  #If the BLM_Name has no match in the above string, returns "Normal", if else, it returns the attraction type value that matches the match. This works because the replace all retrieves a string, and the replacement vector attraction type, has the string to name aspect baked in.
+
+blm_colorado_2|>
+mutate(attraction = ifelse(is.na(str_extract(BLM_Name, match)),"Normal", 
+str_replace_all(str_extract(BLM_Name, match), attraction_type)))
+
+```
+
+
 #Var. 4 ID for sites w/ shared phone/address
+
+```{r}
+blm_colorado_2<-blm_colorado_2|>
+  group_by(Phone_Number)|>
+  mutate(contactRegion = cur_group_id())|>
+  ungroup()
+```
+
 
 #Var. 5 Str_length of Descriptions
 
@@ -99,20 +199,14 @@ blm_colorado_2$Description_Length_Words = stri_count_words(blm_colorado_2$Descri
 
 blm_colorado_2$Direction_Length = str_length(blm_colorado_2$Directions)
 
-blm_colorado_3 <- blm_colorado_2
-
 blm_colorado_2$Direction_Length_Words = stri_count_words(blm_colorado_2$Directions)
 
 ```
 
-
-#filling stuff in
+#New dataset
 ```{r}
-blm_colorado_3[24,"Activities"] <- "INTERPRETIVE PROGRAMS"
-blm_colorado_3[51, "Activities"]<- "OFF HIGHWAY VEHICLES SECENIC DRIVE HIKING CLIMBING HORESEBACK RIDING INFORMATION SITE" 
-blm_colorado_3[55, "Activities"]<- "BIKING HIKING CLIMBING HORSEBACK RIDING " 
-blm_colorado_3[96, "Activities"]<- "CAMPING BIKING HIKING" 
-
-`CAMPING`, `WATER SPORTS`, `ENVIRONMENTAL EDUCATION`, `NON-MOTORIZED BOATING`, `DAY USE AREA`, `PADDLE BOATING`, `WATER ACCESS`, RAFTING, `WHITEWATER RAFTING`, BIRDING, BACKPACKING, `INTERPRETIVE PROGRAMS`, `WILDLIFE VIEWING`, FISHING, BOATING, `HORSEBACK RIDING`
+blm_colorado_3 <- blm_colorado_2
 ```
+
+
 
