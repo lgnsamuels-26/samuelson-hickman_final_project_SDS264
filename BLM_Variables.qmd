@@ -36,17 +36,12 @@ blm_colorado <- read.csv("blm_colorado.csv")
 ```{r}
 
 blm_colorado_2 <- blm_colorado |>
-  mutate(address = str_c(Address_1, Address_2, City, State, Zip_Code,sep = " "),
-        Description = str_replace(Description, "^Overview",""),
-         Zip_Code = as.character(Zip_Code))|>
-  select(-X)
-
-<<<<<<< HEAD
-
-
-=======
->>>>>>> d7962bd7c87af114103bc7ffb4104e87b1cf0514
-
+  mutate(address = str_c(Address_1, Address_2, sep = " "),
+         )|>
+  select(-X)|>
+  group_by(Phone_Number)|>
+  mutate(ContactRegion = cur_group_id())|>
+  ungroup()
 
 
 ```
@@ -121,7 +116,7 @@ blm_colorado_2[95, "Zip_code"] <- "81524"
 listed_activities <- c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION","NON-MOTORIZED BOATING","DAY USE AREA", "PADDLE BOATING","WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING", "BACKPACKING","INTERPRETIVE PROGRAMS","WILDLIFE VIEWING","FISHING", "BOATING", "HORSEBACK RIDING","HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES","SENIC DRIVE","PHOTOGRAPHY","CLIMBING", "HUNTING","WILDERNESS","INFORMATION SITE","PICNICkING")
 
 
-# column with binary for each word, DIDN'T WORK?
+
 
 for (word in listed_activities) {
 blm_colorado_2 <- blm_colorado_2 |>
@@ -208,13 +203,9 @@ blm_colorado_2$Direction_Length_Words = stri_count_words(blm_colorado_2$Directio
 
 ```
 
-<<<<<<< HEAD
 =======
 #New dataset
 ```{r}
 blm_colorado_3 <- blm_colorado_2
 ```
 
-
-
->>>>>>> d7962bd7c87af114103bc7ffb4104e87b1cf0514
