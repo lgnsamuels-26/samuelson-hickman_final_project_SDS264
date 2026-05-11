@@ -50,16 +50,26 @@ Row
 -----------------------------------------------------------------------
 **What Are we Investigating?**
 
+The Bureau of Land Management manages 245 million acres of land across the US, measuring a tenth of America's land. While BLM public lands are less visited than national parks, they are known for offering more activities with less restrictions than national parks. In 2024, BLM public lands hosted 80 million visitors. Colorado is a state with over 150 BLM public lands sites varying from museums to open wilderness, to trail systems and boat access points. Some dashboards exist for finding public lands based on activities, but they have limited info on filtering sites and measuring characteristics such as number of activities and description length. A better dashboard would allow potential visitors to plan trips better-- understanding what different sites have to offer and the most interesting sites based off of description length-- among other benefits. We wish to contribute this dashboard
+
++ [BLM Visitor Info](https://www.blm.gov/blog/2025-06-26/blm-public-lands-know-you-go)
++ [BLM Overview](https://www.blm.gov/about/what-we-manage/national)
+
 Column {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
 ### Our Key Questions
 
-why?
+What is the primary attraction type of each site and what is the distribution
+
+What sites have the longest descriptions? Does this correlate to activities offered?
+
+What sites have certain activities?
 
 ### Data Attribution
 
-When?
++ Data from scraped from [BLM Programs](https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=&page=) 
++ **2 sites do not have information in our dataset
 
 Visualizations
 =======================================================================
