@@ -74,31 +74,12 @@ Inputs {.sidebar}
 -------------------------
 ```{r, echo=FALSE}
 
-typeories <- c(
-  "Backcountry|Wilderness"          = "Wilderness",
-  "Recreation Site|Rec Site"        = "Recreation Site",
-  "Historic District|Museum"        = "Historic Site",
-  "Boat Launch|Boat Ramp"           = "Boat Launch",
-  "Trailhead|Trail System|Trail"    = "Trail"
-)
-
-labels <- c(
-  "Road", "RMZ", "WSA", "OHV", "Fishing Access",
-  "National Monument", "community Site", "River Access",
-  "Byway", "Day Use Area", "SRMA", "Management Area",
-  "Campground", "conservation Area", "HMA"
-)
-label_set <- setNames(labels, labels)
-
-attraction_type <- c(typeories, label_set)
-
-inputPanel(
-  checkboxGroupInput(
-  inputID = "Activity",
-  label = h3("Activity"),
+checkboxGroupInput(
+  inputId = "Activity",
+  label = "Activity",
   choices = c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION","NON-MOTORIZED BOATING","DAY USE AREA", "PADDLE BOATING","WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING", "BACKPACKING","INTERPRETIVE PROGRAMS","WILDLIFE VIEWING","FISHING", "BOATING", "HORSEBACK RIDING","HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES","SENIC DRIVE","PHOTOGRAPHY","CLIMBING", "HUNTING","WILDERNESS","INFORMATION SITE","PICNICKING"),
-  selected = NULL
-))
+  selected = "HIKING"
+)
 ```
 
 
@@ -107,7 +88,7 @@ Column
 
 ```{r}
 filtered_activity <- reactive({
-  BLM_df
+  BLM_df <- BLM
   if (length(input$Activity) == 0) return(BLM_df)
   for (col in input$Activity) { 
     BLM_df <- BLM_df[BLM_df[[col]] == 1, ]
@@ -116,66 +97,44 @@ filtered_activity <- reactive({
 })
 
 renderDT({
-  datatable(filtered_activity(),
+  datatable(filtered_activity() |> select(BLM_Name, Address),
             options = list(pageLength = 5),
             rownames = FALSE)
 })
 ```
 
 
-```{r, echo = FALSE}
-renderPlot({
-    BLM %>%
-      filter(HIKING == input$Activity) %>%
-      filter(DescriptionLengthWords < input$cutoff) %>%
-      select(input$type, "HIKING") %>%
-    ggplot(aes(x = .data[[input$type]], y = HIKING)) +
-      geom_bar() +
-      coord_flip() 
-})
+Numerical Predictors
+==========================
+
+Inputs {.sidebar}
+-------------------------
+```{r, echo=FALSE}
+
+inputPanel(
+      selectInput(inputId = "numer",
+                  label = h3("Numeric predictors"),
+                  choices = c("Description Word Count" = "Description_Length_Words", 
+                              "Description Character Count" = "Description_Length", 
+                              "Direction Word Count" = "Direction_Word_Count", 
+                              "Direction Character Count" = "Direction_Length"),
+                  selected = "Description Word Count"),
+      numericInput(inputId = "cutoff2", 
+                   label = h3("Exclude activity counts above:"), 
+                   value = 50)
+)
 ```
+
 
 Column 
 -------------------------
 
-```{r, echo = FALSE}
-renderPlot({
-    BLM %>% as_tibble() %>%
-      mutate(x = BLM[[input$type]]) %>%
-      group_by(x) %>%
-      summarise(meanprice = mean(SalePrice, na.rm = TRUE)) %>%
-      mutate(x = fct_reorder(x, meanprice)) %>%
-    ggplot(aes(x = x, y = meanprice)) +
-      geom_bar(stat = "identity") +
-      labs(x = input$type)
-})
-```
-
-Numerical Predictors
-==========================
-
-<center>
-
 ```{r, echo=FALSE}
-inputPanel(
-      selectInput(inputId = "numer",
-                  label = h3("Numeric predictors"),
-                  choices = c("Description Word Count" = "Descrpt", 
-                              "Overall Quality" = "OverallQual", 
-                              "Year Built" = "YearBuilt", 
-                              "Above Ground Sqft" = "SqFtAboveGrd", 
-                              "Bedrooms" = "Bedrooms"),
-                  selected = "Above Ground Sqft"),
-      numericInput(inputId = "cutoff2", 
-                   label = h3("Exclude prices above:"), 
-                   value = 500000)
-)
-
 renderPlot({
     BLM %>%
-      filter(SalePrice < input$cutoff2) %>%
-      select(input$numer, "SalePrice") %>%
-    ggplot(aes(x = .data[[input$numer]], y = SalePrice)) +
+      filter(TotalActivities < input$cutoff2) %>%
+      select(input$numer, "TotalActivities") %>%
+    ggplot(aes(x = .data[[input$numer]], y = "TotalActivities")) +
       geom_point() +
       geom_smooth() 
 })
