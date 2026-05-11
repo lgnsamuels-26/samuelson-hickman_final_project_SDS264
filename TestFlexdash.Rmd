@@ -14,9 +14,15 @@ library(flexdashboard)
 library(tidyverse) 
 library(knitr)
 library(ggplot2)
+library(shiny)
+library(dplyr)
 ```
 
 ```{r}
+#| message: false
+#| warning: false
+#| include: false
+
 BLM <- read_csv("blm_colorado_3.csv")
 
 BLM <- BLM %>%
@@ -33,27 +39,139 @@ BLM <- BLM %>%
 print(BLM)
 BLM
 ```
-Column {data-width=650}
+About The Project
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+**What Are we Investigating?**
+
+Column {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
-### Chart A
+### Our Key Questions
+
+why?
+
+### Data Attribution
+
+When?
+
+Visualizations
+=======================================================================
+
+ROW {.tabset .tabset-fade}
+-----------------------------------------------------------------------
+
+
+### Total Presence of activity
+
+```{r}
+
+ui <- fluidPage(
+titlePanel("BLM Histogram Viewer"),
+ sidebarLayout(
+  sidebarPanel(
+      
+    selectInput(
+      inputId = "xvar",
+      label = "Choose a variable:",
+      choices = c("CAMPING", "WATER SPORTS", "ENVIRONMENTAL EDUCATION", "NON-MOTORIZED BOATING", "DAY USE AREA", "PADDLE BOATING", "WATER ACCESS", "RAFTING", "WHITEWATER RAFTING", "BIRDING", "BACKPACKING", "INTERPRETIVE PROGRAMS", "WILDLIFE VIEWING", "FISHING", "BOATING", "HORSEBACK RIDING", "HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES", "SENIC DRIVE", "PHOTOGRAPHY", "CLIMBING", "HUNTING", "WILDERNESS", "INFORMATION SITE", "PICNICKING"),
+      selected = "CAMPING")),
+   mainPanel(
+    plotOutput("histPlot"))))
+
+
+
+server <- function(input, output) {
+output$histPlot <- renderPlot({
+  ggplot(BLM, aes(x = .data[[input$xvar]])) +
+    geom_bar(
+        bins = 20,
+        fill = "steelblue",
+        color = "black") +
+      labs(
+        title = paste("Histogram of", input$xvar),
+        x = input$xvar,
+        y = "Count") +
+      theme_minimal()})}
+
+shinyApp(ui = ui, server = server)
+#"CAMPING", "WATER SPORTS", "ENVIRONMENTAL EDUCATION", "NON-MOTORIZED BOATING", "DAY USE AREA", "PADDLE BOATING", "WATER ACCESS", "RAFTING", "WHITEWATER RAFTING", "BIRDING", "BACKPACKING", "INTERPRETIVE PROGRAMS", "WILDLIFE VIEWING", "FISHING", "BOATING", "HORSEBACK RIDING", "HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES", "SENIC DRIVE", "PHOTOGRAPHY", "CLIMBING", "HUNTING", "WILDERNESS", "INFORMATION SITE", "PICNICKING"     
+```
+
+
+### Total Presence of Each Activity
+```{r}
+
+ui <- fluidPage(
+titlePanel("BLM Recreation Activity Counts"),
+mainPanel(
+  plotOutput("barPlot", height = "700px")))
+
+server <- function(input, output) {
+output$barPlot <- renderPlot({
+    
+activities <- c(
+      "CAMPING",
+      "WATER SPORTS",
+      "ENVIRONMENTAL EDUCATION",
+      "NON-MOTORIZED BOATING",
+      "DAY USE AREA",
+      "PADDLE BOATING",
+      "WATER ACCESS",
+      "RAFTING",
+      "WHITEWATER RAFTING",
+      "BIRDING",
+      "BACKPACKING",
+      "INTERPRETIVE PROGRAMS",
+      "WILDLIFE VIEWING",
+      "FISHING",
+      "BOATING",
+      "HORSEBACK RIDING",
+      "HIKING",
+      "OFF HIGHWAY VEHICLE",
+      "RECREATIONAL VEHICLES",
+      "SENIC DRIVE",
+      "PHOTOGRAPHY",
+      "CLIMBING",
+      "HUNTING",
+      "WILDERNESS",
+      "INFORMATION SITE",
+      "PICNICKING")
+    
+
+activity_counts <- data.frame(
+  Activity = activities,
+  Count = sapply(activities, function(x) {
+    sum(BLM[[x]] == 1, na.rm = TRUE)
+      }))
+
+activity_counts <- activity_counts %>%
+  arrange(desc(Count))
+    
+ggplot(activity_counts,
+  aes(x = reorder(Activity, Count), y = Count)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Total Number of Recreation Sites by Activity",
+    x = "Activity",
+    y = "Total Instances of Activity") +
+  theme_minimal(base_size = 14)})}
+
+shinyApp(ui = ui, server = server)
+```
+
+### Hist of Word length of descirption
 
 ```{r}
 BLM |>
-  ggplot(aes(HIKING)) +
-  geom_bar()
+  ggplot(aes(DescriptionLengthWords)) +
+  geom_histogram()
 ```
 
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Chart B
-
-```{r}
-
-```
-
-### Map Stuff
+### Overivew of Activity Locations
 
 ```{r}
 library(sp)
@@ -61,7 +179,8 @@ library(sf)
 library(leaflet)
 library(mapview)
 
-df <- BLM
+df <- BLM |>
+  filter(Latitude != 0)
 
 # Create point dataframe
 points_df <- data.frame(
