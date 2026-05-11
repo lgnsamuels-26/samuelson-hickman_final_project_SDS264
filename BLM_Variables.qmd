@@ -207,5 +207,7 @@ blm_colorado_2$Direction_Length_Words = stri_count_words(blm_colorado_2$Directio
 #New dataset
 ```{r}
 blm_colorado_3 <- blm_colorado_2
+
+write.csv(blm_colorado_3, "blm_colorado_3.csv")
 ```
 
