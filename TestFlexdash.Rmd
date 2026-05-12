@@ -20,6 +20,7 @@ library(sp)
 library(sf)
 library(leaflet)
 library(mapview)
+library(dyplr)
 ```
 
 ```{r}
@@ -39,7 +40,7 @@ BLM <- BLM %>%
          DescriptionLengthWords = `Description_Length_Words`,
          DirectionCharacterLength = `Direction_Length`,
          DirectionLengthWords = `Direction_Length_Words`)
-
+BLM <- janitor::clean_names(BLM)
 print(BLM)
 BLM
 ```
@@ -90,7 +91,7 @@ titlePanel("BLM Histogram Viewer"),
     selectInput(
       inputId = "xvar",
       label = "Choose a variable:",
-      choices = c("CAMPING", "WATER SPORTS", "ENVIRONMENTAL EDUCATION", "NON-MOTORIZED BOATING", "DAY USE AREA", "PADDLE BOATING", "WATER ACCESS", "RAFTING", "WHITEWATER RAFTING", "BIRDING", "BACKPACKING", "INTERPRETIVE PROGRAMS", "WILDLIFE VIEWING", "FISHING", "BOATING", "HORSEBACK RIDING", "HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES", "SENIC DRIVE", "PHOTOGRAPHY", "CLIMBING", "HUNTING", "WILDERNESS", "INFORMATION SITE", "PICNICKING"),
+      choices = c("camping","water_sports","environmental_education","non_motorized_boating","day_use_area","paddle_boating","water_access","rafting","whitewater_rafting","birding","backpacking","interpretive_programs","wildlife_viewing","fishing","boating","horseback_riding","hiking","off_highway_vehicle","recreational_vehicles","senic_drive","photography","climbing","hunting","wilderness","information_site","picknicking"),
       selected = "CAMPING")),
    mainPanel(
     plotOutput("histPlot"))))
@@ -127,7 +128,7 @@ server <- function(input, output) {
 output$barPlot <- renderPlot({
     
 activities <- c(
-      "CAMPING", "WATER SPORTS", "ENVIRONMENTAL EDUCATION", "NON-MOTORIZED BOATING", "DAY USE AREA", "PADDLE BOATING", "WATER ACCESS", "RAFTING", "WHITEWATER RAFTING", "BIRDING", "BACKPACKING", "INTERPRETIVE PROGRAMS", "WILDLIFE VIEWING", "FISHING", "BOATING", "HORSEBACK RIDING", "HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES", "SENIC DRIVE", "PHOTOGRAPHY", "CLIMBING", "HUNTING", "WILDERNESS", "INFORMATION SITE", "PICNICKING")
+     "camping","water_sports","environmental_education","non_motorized_boating","day_use_area","paddle_boating","water_access","rafting","whitewater_rafting","birding","backpacking","interpretive_programs","wildlife_viewing","fishing","boating","horseback_riding","hiking","off_highway_vehicle","recreational_vehicles","senic_drive","photography","climbing","hunting","wilderness","information_site","picknicking")
     
 activity_counts <- data.frame(
   Activity = activities,
@@ -243,10 +244,9 @@ library(mapview)
 library(dplyr)
 
 activity_cols <- c(
-"CAMPING", "WATER SPORTS", "ENVIRONMENTAL EDUCATION", "NON-MOTORIZED BOATING", "DAY USE AREA", "PADDLE BOATING", "WATER ACCESS", "RAFTING", "WHITEWATER RAFTING", "BIRDING", "BACKPACKING", "INTERPRETIVE PROGRAMS", "WILDLIFE VIEWING", "FISHING", "BOATING", "HORSEBACK RIDING", "HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES", "SENIC DRIVE", "PHOTOGRAPHY", "CLIMBING", "HUNTING", "WILDERNESS", "INFORMATION SITE", "PICNICKING")
+"camping","water_sports","environmental_education","non_motorized_boating","day_use_area","paddle_boating","water_access","rafting","whitewater_rafting","birding","backpacking","interpretive_programs","wildlife_viewing","fishing","boating","horseback_riding","hiking","off_highway_vehicle","recreational_vehicles","senic_drive","photography","climbing","hunting","wilderness","information_site","picknicking")
 
 df <- BLM |>
-  filter(Latitude != 0) |>
   mutate(
     activity_count = rowSums(
       across(all_of(activity_cols)) == 1,
@@ -266,3 +266,6 @@ mapview(
   label = points_sdf$BLM_Name)
 ```
 
+```{r}
+colnames(BLM)
+```
