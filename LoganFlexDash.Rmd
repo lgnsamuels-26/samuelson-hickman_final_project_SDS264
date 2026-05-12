@@ -1,0 +1,197 @@
+---
+title: "Colorado Public Lands"
+runtime: shiny
+output: 
+  flexdashboard::flex_dashboard:
+    theme:  yeti
+#    logo: StOlaf.png
+---
+
+```{r global, include=FALSE, message=FALSE}
+library(tidyverse) 
+library(knitr)
+library(DT)
+BLM <- read_csv("blm_colorado_3.csv")
+
+
+BLM <- BLM |>
+  mutate(Description = str_replace(Description, "^Overview",""))|>
+  rename(`Address 1` = `Address_1`,
+         `Address 2` = `Address_2`,
+         `Zip Code` = `Zip_Code`,
+         `Phone Number` = `Phone_Number`,
+         `Total Activities` = total_activities,
+         `Description Character Length` = `Description_Length`,
+         `Description Word Count` = `Description_Length_Words`,
+         `Direction Character Length` = `Direction_Length`,
+         `Direction Word Count` = `Direction_Length_Words`,
+          Address = address,
+         `Attraction Type` = attraction,
+         `Contact Region` = contactRegion,
+         Name = BLM_Name)
+```
+
+About
+==========================
+
+Column {data-width = 400}
+-------------------------
+
+#### Authors
+
+Max Hickman and Logan Samuelson
+
+#### Background Information
+
+The Bureau of Land Management manages 245 million acres of land across the US, measuring a tenth of America's land. While BLM public lands are less visited than national parks, they are known for offering more activities with less restrictions. In 2024, BLM public lands hosted 80 million visitors. Colorado has over 150 BLM public lands sites varying from museums to open wilderness, to trail systems and boat access points. Some dashboards exist for finding public lands based on activities, but they have limited info on filtering sites and measuring characteristics, like the number of activities and description length. 
+
+A better dashboard would allow potential visitors to plan trips better-- understanding what different sites have to offer. This dashboard can help data scientists too, by mapping  sites and analyzing whether there are meta-relationships between description length and activity count, among other analysis
+
++ [BLM Visitor Info](https://www.blm.gov/blog/2025-06-26/blm-public-lands-know-you-go)
++ [BLM Overview](https://www.blm.gov/about/what-we-manage/national)
+
+#### Our Key Questions
+
+What is the primary attraction type of each site and what is the distribution
+
+What sites have the longest descriptions? Does this correlate to activities offered?
+
+What sites have certain activities?
+
+#### Data Sources
+
++ Data from scraped from [BLM Programs](https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=&page=) 
++ **2 sites do not have information in our dataset
+
+
+Column {data-width = 100}
+-------------------------
+
+```{r  fig.width = 4, fig.height = 4}
+include_graphics("~/samuelson-hickman_test/PenitenteCanyon.jpg") 
+```
+
+
+Query Colorado Public Land
+==========================
+
+Inputs {.sidebar}
+-------------------------
+```{r, echo=FALSE}
+selectInput(
+  inputId = "Activity",
+  label = "Select Activities",
+  choices = c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION",
+             "NON-MOTORIZED BOATING","DAY USE AREA","PADDLE BOATING",
+           "WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING",
+            "BACKPACKING","INTERPRETIVE PROGRAMS","WILDLIFE VIEWING",
+            "FISHING","BOATING","HORSEBACK RIDING","HIKING",
+            "OFF HIGHWAY VEHICLE","RECREATIONAL VEHICLES","SCENIC DRIVE",
+              "PHOTOGRAPHY","CLIMBING","HUNTING","WILDERNESS",
+             "INFORMATION SITE","PICNICKING"),
+  selected= NULL,
+  multiple=TRUE
+)
+selectInput(
+  inputId  ="Attraction Type",
+  label   = "Attraction Type",
+  choices= c("All", sort(unique(BLM$`Attraction Type`))),
+  selected= "All"
+)
+selectInput(
+  inputId  ="Zip Code",
+  label   = "Zip Code",
+  choices= c("All", sort(unique(BLM$`Zip Code`))),
+  selected= "All"
+)
+```
+
+Column {.tabset .tabset-fade}
+-------------------------
+
+#### Filtered by Activity, Attraction Type, and Zip Code
+
+The following dashboard allows you to search by activity and attraction type. This offers an intuitive way for potential travelers to pinpoint the public land in Colorado best suited for them. Importantly, if shows us that the attraction types, like Campground, do not always contain all lands where camping or an attraction related activity is allowed!
+<br>
+<br>
+
+```{r}
+filtered_activity <- reactive({
+  BLM_df <- BLM
+  
+    if (input$`Attraction Type` != "All") {
+    BLM_df <- BLM_df |> filter(`Attraction Type` == input$`Attraction Type`)
+  }
+  
+  if(length(input$Activity) > 0) {
+    for (col in input$Activity) {
+      BLM_df <- BLM_df[BLM_df[[col]] == 1, ]
+    }
+        if (input$`Zip Code` != "All") {
+    BLM_df <- BLM_df |> filter(`Zip Code` == input$`Zip Code`)
+  }
+
+  BLM_df
+}})
+
+renderDT({
+  datatable(
+    filtered_activity() |> select(`Name`, Address, City,`Zip Code`, `Attraction Type`, `Total Activities`, Activities),
+    options = list(pageLength = 30,
+                   scrollY = "600px"),
+    rownames = FALSE
+  )
+})
+```
+
+
+Text Analysis
+==========================
+
+Inputs {.sidebar}
+-------------------------
+
+```{r}
+inputPanel(
+      selectInput(inputId = "text",
+                  label = h3("Text Counts"),
+                  choices = c("Description Character Length",
+                              "Description Word Count",
+                              "Direction Character Length",
+                              "Direction Word Count"),
+                  selected = "Description Word Count"))
+selectInput(
+  inputId  ="categ",
+  label   = "Filter Sites",
+  choices= c("Attraction Type",
+             "Zip Code",
+             "Contact Region",
+             "Total Activities"),
+  selected = "Total Activities"
+)
+
+```
+
+Column {.tabset .tabset-fade}
+-------------------------
+There are many activities offered in Colorado public lands, but we ask, is it possible to predict the length of the site description or directions? This leads us to evaluate the distributions by the activity counts per site, the zip code, or the contact region. Contact Region denotes sites that share the same phone number, indicating the same field office. If field offices author these descriptions, there may be patterns of length.
+<br>
+<br>
+```{r}
+renderPlot({
+    BLM |>
+    mutate(`Total Activities` = as.factor(`Total Activities`),
+           `Zip Code` = as.factor(`Zip Code`),
+           `Contact Region` = as.factor(`Contact Region`))|>
+    ggplot(aes(y = .data[[input$text]], x = fct_reorder(.data[[input$categ]],.data[[input$text]]), fill = .data[[input$categ]])) +
+      geom_boxplot()+
+    labs(title = paste(input$text, "distribution vs", input$categ),
+           x     = input$categ,
+           y     = input$text)+
+   theme_minimal()
+  
+})
+```
+
+<br>
+ Results show
