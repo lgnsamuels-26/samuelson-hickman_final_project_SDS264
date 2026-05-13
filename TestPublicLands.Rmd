@@ -94,7 +94,7 @@ Column {data-width = 100}
 <br>
 
 ```{r  fig.width = 4, fig.height = 4, fig.cap = "Penitente Canyon"}
-include_graphics("~/samuelson-hickman_test/PenitenteCanyon.jpg") 
+include_graphics("PenitenteCanyon.jpg") 
 ```
 
 
@@ -108,44 +108,44 @@ ROW {.tabset .tabset-fade}
 ### Total Presence of activity
 
 ```{r}
-
 ui <- fluidPage(
-titlePanel("BLM Histogram Viewer"),
- sidebarLayout(
+  titlePanel("Pie Chart of Existance of Activity"),
+  
+sidebarLayout(
   sidebarPanel(
-      
     selectInput(
       inputId = "xvar",
       label = "Choose a variable:",
-      choices = c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION",
-             "NON-MOTORIZED BOATING","DAY USE AREA","PADDLE BOATING",
-           "WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING",
-            "BACKPACKING","INTERPRETIVE PROGRAMS","WILDLIFE VIEWING",
-            "FISHING","BOATING","HORSEBACK RIDING","HIKING",
-            "OFF HIGHWAY VEHICLE","RECREATIONAL VEHICLES","SCENIC DRIVE",
-              "PHOTOGRAPHY","CLIMBING","HUNTING","WILDERNESS",
-             "INFORMATION SITE","PICNICKING"),
-      selected = "CAMPING")),
-   mainPanel(
-    plotOutput("histPlot"))))
-
-
+      choices = c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION","NON-MOTORIZED BOATING","DAY USE AREA","PADDLE BOATING","WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING","BACKPACKING","INTERPRETIVE PROGRAMS","WILDLIFE VIEWING","FISHING","BOATING","HORSEBACK RIDING","HIKING","OFF HIGHWAY VEHICLE","RECREATIONAL VEHICLES","SCENIC DRIVE","PHOTOGRAPHY","CLIMBING","HUNTING","WILDERNESS","INFORMATION SITE","PICNICKING"),
+      selected = "camping")),
+mainPanel(
+    plotOutput("piePlot"))))
 
 server <- function(input, output) {
-output$histPlot <- renderPlot({
-  ggplot(BLM, aes(x = .data[[input$xvar]])) +
-    geom_bar(
-        bins = 20,
-        fill = "steelblue",
-        color = "black") +
-      labs(
-        title = paste("Histogram of", input$xvar),
-        x = input$xvar,
-        y = "Count") +
-      theme_minimal()})}
+output$piePlot <- renderPlot({
+pie_data <- BLM %>%
+  count(value = .data[[input$xvar]]) %>%
+  filter(!is.na(value)) %>%
+  mutate(
+    value = factor(
+      value,
+      levels = c(0, 1),
+      labels = c("Does Not Exist", "Exists")))
+    
+ggplot(pie_data, aes(x = "", y = n, fill = value)) +
+  geom_col(color = "black") +
+  coord_polar(theta = "y") +
+  labs(
+    title = paste("Pie Chart of", input$xvar),
+    fill = "Status") +
+  theme_void()})}
 
 shinyApp(ui = ui, server = server)
-#"CAMPING", "WATER SPORTS", "ENVIRONMENTAL EDUCATION", "NON-MOTORIZED BOATING", "DAY USE AREA", "PADDLE BOATING", "WATER ACCESS", "RAFTING", "WHITEWATER RAFTING", "BIRDING", "BACKPACKING", "INTERPRETIVE PROGRAMS", "WILDLIFE VIEWING", "FISHING", "BOATING", "HORSEBACK RIDING", "HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES", "SENIC DRIVE", "PHOTOGRAPHY", "CLIMBING", "HUNTING", "WILDERNESS", "INFORMATION SITE", "PICNICKING"     
+
+
+
+
+
 ```
 
 
@@ -276,13 +276,13 @@ mapview(points_sdf, label = points_sdf$names, col.regions = "darkgreen", legend 
 library(sf)
 library(mapview)
 library(dplyr)
-
+#no senic drive in Max running code?
 activity_cols <- c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION",
              "NON-MOTORIZED BOATING","DAY USE AREA","PADDLE BOATING",
            "WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING",
             "BACKPACKING","INTERPRETIVE PROGRAMS","WILDLIFE VIEWING",
             "FISHING","BOATING","HORSEBACK RIDING","HIKING",
-            "OFF HIGHWAY VEHICLE","RECREATIONAL VEHICLES","SCENIC DRIVE",
+            "OFF HIGHWAY VEHICLE","RECREATIONAL VEHICLES",
               "PHOTOGRAPHY","CLIMBING","HUNTING","WILDERNESS",
              "INFORMATION SITE","PICNICKING")
 
