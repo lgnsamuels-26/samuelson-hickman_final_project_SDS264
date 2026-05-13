@@ -20,7 +20,7 @@ library(sp)
 library(sf)
 library(leaflet)
 library(mapview)
-library(dyplr)
+
 ```
 
 ```{r}
@@ -61,7 +61,7 @@ Column {.tabset .tabset-fade}
 
 ### Our Key Questions
 
-What is the primary attraction type of each site and what is the distribution
+What is the distribution of activities and attraction type across sites?
 
 What sites have the longest descriptions? Does this correlate to activities offered?
 
