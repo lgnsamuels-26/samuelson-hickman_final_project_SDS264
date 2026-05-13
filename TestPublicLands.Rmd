@@ -1,5 +1,5 @@
 ---
-title: "Test Public Lands"
+title: "Colorado BLM Public Lands"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -80,7 +80,7 @@ A better dashboard would allow potential visitors to plan trips better-- underst
 
 #### Our Key Questions
 
-What is the primary attraction type of each site and what is the distribution
+What is the primary attraction type of each site and what is the distribution?
 
 What sites have the longest descriptions? Does this correlate to activities offered?
 
@@ -207,7 +207,7 @@ titlePanel("BLM Histogram Viewer"),
   selectInput(
     inputId = "xvar",
     label = "Choose a variable:",
-    choices = c("Description Word Count", "Description Character Length"),
+    choices = c("Description Word Count", "Description Character Length", "Total Activities"),
     selected = "Description Word Count")),
    mainPanel(
     plotOutput("histPlot"))))
@@ -277,6 +277,8 @@ Query Colorado Public Land
 Inputs {.sidebar}
 -------------------------
 ```{r, echo=FALSE}
+
+## Sets the activity id used in later calls, the label, which is seen by the viewer, and the choices. Here, we allow for multiple choices, allowing for a multiple filter options.
 selectInput(
   inputId = "Activity",
   label = "Select Activities",
@@ -291,12 +293,14 @@ selectInput(
   selected= "DAY USE AREA",
   multiple=TRUE
 )
+## Sets the attraction type and sorts the choices such that there is an option for each type, plus the ability to select them all. 
 selectInput(
   inputId  ="Attraction Type",
   label   = "Attraction Type",
   choices= c("All", sort(unique(BLM$`Attraction Type`))),
   selected= "All"
-)
+) 
+## Sets the zip code so that users can filter by location. Same logic as above.
 selectInput(
   inputId  ="Zip Code",
   label   = "Zip Code",
@@ -315,27 +319,30 @@ The following dashboard allows you to search by activity and attraction type. Th
 <br>
 
 ```{r}
+## The name of this visual is filtered activity
 filtered_activity <- reactive({
   BLM_df <- BLM
-  
+## If the input is not "All," the input is filtered to the user selection.  
     if (input$`Attraction Type` != "All") {
     BLM_df <- BLM_df |> filter(`Attraction Type` == input$`Attraction Type`)
   }
-  
-  if(length(input$Activity) > 0) {
-    for (col in input$Activity) {
-      BLM_df <- BLM_df[BLM_df[[col]] == 1, ]
-    }
-        if (input$`Zip Code` != "All") {
+## If the Activity is not zero, for every column indicated in the query as 1 is added to the data set with a for loop.
+if(length(input$Activity) > 0) {
+for(col in input$Activity) {
+     BLM_df <- BLM_df[BLM_df[[col]] == 1, ]
+}
+  ## If the Zip Code is specified, the dataset is filtered by the choice.
+     if (input$`Zip Code` != "All") {
     BLM_df <- BLM_df |> filter(`Zip Code` == input$`Zip Code`)
   }
 
   BLM_df
 }})
 
+## Rendering the datatable with the DT package. The preset columns are the site name, address, city, zip code, attraction type, total activities, and activities list.
 renderDT({
   datatable(
-    filtered_activity() |> select(`Name`, Address, City,`Zip Code`, `Attraction Type`, `Total Activities`, Activities),
+  filtered_activity() |> select(`Name`, Address, City,`Zip Code`, `Attraction Type`, `Total Activities`, Activities),
     options = list(pageLength = 30,
                    scrollY = "600px"),
     rownames = FALSE
@@ -376,8 +383,10 @@ Column {.tabset .tabset-fade}
 There are many activities offered in Colorado public lands, but we ask, is it possible to predict the length of the site description or directions? This leads us to evaluate the distributions by the activity counts per site, the zip code, or the contact region. Contact Region denotes sites that share the same phone number, indicating the same field office. If field offices author these descriptions, there may be patterns of length.
 <br>
 <br>
-```{r}
-renderPlot({
+```{r, fig.height=8}
+renderPlot(
+  height = 450,
+  {
     BLM |>
     mutate(`Total Activities` = as.factor(`Total Activities`),
            `Zip Code` = as.factor(`Zip Code`),
@@ -393,4 +402,14 @@ renderPlot({
 ```
 
 <br>
- Results show
+<br>
+<br>
+Results show that there are not strong relationships between the amount of activities offered and description word count. This makes sense considering that sites with few activities, which represent most sites, have a lower and tighter distribution of description word count.
+
+For Contact Regions, which represent sites with the same phone number, there is variation between sites' median description word counts and their spread.This suggests that certain regions, like Region 15, likely have field offices that tend to write more on their sites' webpages.
+
+Zip Codes show some variation, but are less interesting for analysis. Some Zip Codes have more sites than another, similar to Contact Regions, but a field office is a better explanation of this trend than an unrelated geographic boundary.
+
+Filtering by attraction type shows that the campground subtype has a wide spread of word counts across its site descriptions. This may show that there is more variation in the types of descriptions a campground receives. More research could explain if there are campgrounds with more or less amenities or pertinent details to discuss. Or, perhaps campgrounds are spread across contact regions and this explains the variation. 
+
+Direction length, we conclude is very standard across different filters. It seems that this element of the website requires roughly the same amount of information per site. 
