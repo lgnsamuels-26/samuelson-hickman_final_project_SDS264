@@ -20,7 +20,7 @@ library(sp)
 library(sf)
 library(leaflet)
 library(mapview)
-
+library(dplyr)
 ```
 
 ```{r}
@@ -61,7 +61,7 @@ Column {.tabset .tabset-fade}
 
 ### Our Key Questions
 
-What is the distribution of activities and attraction type across sites?
+What is the primary attraction type of each site and what is the distribution
 
 What sites have the longest descriptions? Does this correlate to activities offered?
 
@@ -82,38 +82,47 @@ ROW {.tabset .tabset-fade}
 ### Total Presence of activity
 
 ```{r}
+library(shiny)
+library(ggplot2)
+library(dplyr)
 
 ui <- fluidPage(
-titlePanel("BLM Histogram Viewer"),
- sidebarLayout(
+  titlePanel("Pie Chart of Existance of Activity"),
+  
+sidebarLayout(
   sidebarPanel(
-      
     selectInput(
       inputId = "xvar",
       label = "Choose a variable:",
       choices = c("camping","water_sports","environmental_education","non_motorized_boating","day_use_area","paddle_boating","water_access","rafting","whitewater_rafting","birding","backpacking","interpretive_programs","wildlife_viewing","fishing","boating","horseback_riding","hiking","off_highway_vehicle","recreational_vehicles","senic_drive","photography","climbing","hunting","wilderness","information_site","picknicking"),
-      selected = "CAMPING")),
-   mainPanel(
-    plotOutput("histPlot"))))
-
-
+      selected = "camping")),
+mainPanel(
+    plotOutput("piePlot"))))
 
 server <- function(input, output) {
-output$histPlot <- renderPlot({
-  ggplot(BLM, aes(x = .data[[input$xvar]])) +
-    geom_bar(
-        bins = 20,
-        fill = "steelblue",
-        color = "black") +
-      labs(
-        title = paste("Histogram of", input$xvar),
-        x = input$xvar,
-        y = "Count") +
-      theme_minimal()})}
+  
+output$piePlot <- renderPlot({
+    
+pie_data <- BLM %>%
+  count(value = .data[[input$xvar]]) %>%
+  filter(!is.na(value)) %>%
+  mutate(
+    value = factor(
+      value,
+      levels = c(0, 1),
+      labels = c("Does Not Exist", "Exists")))
+    
+ggplot(pie_data, aes(x = "", y = n, fill = value)) +
+  geom_col(color = "black") +
+  coord_polar(theta = "y") +
+  labs(
+    title = paste("Pie Chart of", input$xvar),
+    fill = "Status") +
+  theme_void()})}
 
 shinyApp(ui = ui, server = server)
-#"CAMPING", "WATER SPORTS", "ENVIRONMENTAL EDUCATION", "NON-MOTORIZED BOATING", "DAY USE AREA", "PADDLE BOATING", "WATER ACCESS", "RAFTING", "WHITEWATER RAFTING", "BIRDING", "BACKPACKING", "INTERPRETIVE PROGRAMS", "WILDLIFE VIEWING", "FISHING", "BOATING", "HORSEBACK RIDING", "HIKING", "OFF HIGHWAY VEHICLE", "RECREATIONAL VEHICLES", "SENIC DRIVE", "PHOTOGRAPHY", "CLIMBING", "HUNTING", "WILDERNESS", "INFORMATION SITE", "PICNICKING"     
 ```
+
 
 
 ### Total Presence of Each Activity
@@ -141,7 +150,7 @@ activity_counts <- activity_counts %>%
     
 ggplot(activity_counts,
   aes(x = reorder(Activity, Count), y = Count)) +
-  geom_col(fill = "steelblue") +
+  geom_col(fill = "darkgreen") +
   coord_flip() +
   labs(
     title = "Total Number of Recreation Sites by Activity",
@@ -174,7 +183,7 @@ output$histPlot <- renderPlot({
   ggplot(BLM, aes(x = .data[[input$xvar]])) +
     geom_histogram(
         bins = 20,
-        fill = "steelblue",
+        fill = "darkgreen",
         color = "black") +
       labs(
         title = paste("Histogram of", input$xvar),
@@ -261,7 +270,7 @@ mapview(
   points_sdf,
   zcol = "activity_count",
   cex = "activity_count",
-  col.regions = colorRampPalette(c("lightblue", "orange", "red")),
+  col.regions = colorRampPalette(c("lightgreen", "green", "darkgreen")),
   legend = TRUE,
   label = points_sdf$BLM_Name)
 ```
