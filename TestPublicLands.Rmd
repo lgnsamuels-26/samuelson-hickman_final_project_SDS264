@@ -56,6 +56,8 @@ BLM <- BLM %>%
          Name = BLM_Name)
 print(BLM)
 BLM
+
+view(BLM)
 ```
 
 
@@ -227,24 +229,6 @@ output$histPlot <- renderPlot({
 shinyApp(ui = ui, server = server)
 ```
 
-### Overivew of Activity Locations
-
-```{r}
-df <- BLM |>
-  filter(Latitude != 0, Longitude != 0)|>
-  rename(lat = Latitude, lng = Longitude)
-
-# Convert the data frame to a spatial points data frame
-points_sdf <- st_as_sf(
-  df,
-  coords = c("lng", "lat"),
-  crs = 4326)
-
-# Plot the points on a map
-mapview(points_sdf, label = points_sdf$Name, cex= "Total Activities", zcol = "Attraction Type", legend = FALSE)
-
-```
-
 ### Activity Density Per Location
 
 ```{r}
@@ -400,7 +384,7 @@ renderPlot({
            `Contact Region` = as.factor(`Contact Region`))|>
     ggplot(aes(y = .data[[input$text]], x = fct_reorder(.data[[input$categ]],.data[[input$text]]), fill = .data[[input$categ]])) +
       geom_boxplot()+
-    labs(title = paste(input$text, "distribution vs", input$categ),
+    labs(title = paste(input$text, "vs", input$categ),
            x     = input$categ,
            y     = input$text)+
    theme_minimal()
