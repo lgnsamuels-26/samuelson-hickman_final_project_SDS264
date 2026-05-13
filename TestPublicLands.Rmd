@@ -202,8 +202,8 @@ titlePanel("BLM Histogram Viewer"),
   selectInput(
     inputId = "xvar",
     label = "Choose a variable:",
-    choices = c("`Description Word Count`", "`Description Character Length`"),
-    selected = "`Description Word Count`")),
+    choices = c("Description Word Count", "Description Character Length"),
+    selected = "Description Word Count")),
    mainPanel(
     plotOutput("histPlot"))))
 
