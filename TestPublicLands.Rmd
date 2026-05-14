@@ -121,16 +121,16 @@ include_graphics("PenitenteCanyon.jpg")
 Visualizations
 =======================================================================
 
-ROW {.tabset .tabset-fade}
+Column {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
-
 ### Total Presence of activity
-
+Here we can investigate the proportion of each activity type occurring throughout BLM land in Colorado. It becomes evident that many of the activities are not very prevalent across BLM specific sites.
 ```{r}
+#setting up pie chart user interface.
 ui <- fluidPage(
   titlePanel("Pie Chart of Existence of Activity"),
-  
+#chooses which Columns from BLM are available in dropdown menu.
 sidebarLayout(
   sidebarPanel(
     selectInput(
@@ -140,7 +140,7 @@ sidebarLayout(
       selected = "camping")),
 mainPanel(
     plotOutput("piePlot"))))
-
+#cleans data and assignes 0 values as without and 1 as with on pie chart key.
 server <- function(input, output) {
 output$piePlot <- renderPlot({
 pie_data <- BLM %>%
@@ -151,7 +151,7 @@ pie_data <- BLM %>%
       value,
       levels = c(0, 1),
       labels = c(paste("Proportion Without", input$xvar), paste("Proportion With", input$xvar))))
-    
+#creates actual pie chart and chooses colors.    
 ggplot(pie_data, aes(x = "", y = n, fill = value)) +
   geom_col(color = "black") +
   geom_text(aes(label = n),
@@ -164,22 +164,17 @@ ggplot(pie_data, aes(x = "", y = n, fill = value)) +
   theme_void()})}
 
 shinyApp(ui = ui, server = server)
-
-
-
-
-
 ```
 
-
 ### Total Presence of Each Activity
+This histogram reveals to us that the most common activity listed at BLM sites is Hiking with Camping as a close second. Finally, more specialized activities like boating or birding are much less prevalent. 
 ```{r}
-
+##Creates user interface and sizing(non-interactive).
 ui <- fluidPage(
 titlePanel("BLM Recreation Activity Counts"),
 mainPanel(
-  plotOutput("barPlot", height = "700px")))
-
+  plotOutput("barPlot", height = "500px")))
+##Starts creation of plot from specific values chosen as activies.
 server <- function(input, output) {
 output$barPlot <- renderPlot({
     
@@ -191,16 +186,16 @@ activities <- c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION",
             "OFF HIGHWAY VEHICLE","RECREATIONAL VEHICLES","SCENIC DRIVE",
               "PHOTOGRAPHY","CLIMBING","HUNTING","WILDERNESS",
              "INFORMATION SITE","PICNICKING")
-    
+##Renames activities and counts each 1 value per column.    
 activity_counts <- data.frame(
   Activity = activities,
   Count = sapply(activities, function(x) {
     sum(BLM[[x]] == 1, na.rm = TRUE)
       }))
-
+##Puts bars in descending order.
 activity_counts <- activity_counts %>%
   arrange(desc(Count))
-    
+##Creates actual plot, color and axis titles.  
 ggplot(activity_counts,
   aes(x = reorder(Activity, Count), y = Count)) +
   geom_col(fill = "darkgreen") +
@@ -215,13 +210,14 @@ shinyApp(ui = ui, server = server)
 ```
 
 ### Length of Site Descirption
-
+Here we can visualize the number of characters, words, or activities and how prevalent each level is. From this we can see that around 100 words, 400 characters, and 1.5 activites are the most common attributes across sites. 
 ```{r}
+##Sets up interactive user interface.
 ui <- fluidPage(
 titlePanel("BLM Histogram Viewer"),
  sidebarLayout(
   sidebarPanel(
-      
+##Selects which variables are input from BLM data.      
   selectInput(
     inputId = "xvar",
     label = "Choose a variable:",
@@ -229,8 +225,7 @@ titlePanel("BLM Histogram Viewer"),
     selected = "Description Word Count")),
    mainPanel(
     plotOutput("histPlot"))))
-
-
+##Creates histogram from variables and specifies aesthetic items.
 server <- function(input, output) {
 output$histPlot <- renderPlot({
   ggplot(BLM, aes(x = .data[[input$xvar]])) +
@@ -248,12 +243,9 @@ shinyApp(ui = ui, server = server)
 ```
 
 ### Activity Density Per Location
-
+Here we have a heat map of BLM sites and their corresponding activity amounts (shown in size). We can see that these sites mostly exist in the western half of Colorado and have a node slightly west of Denver, one at Grand Junction and some in the south western section of the state. This makes sense as all of these sites exist within the Rocky Mountains and are where large tracts of publicly owned land exist.
 ```{r}
-library(sf)
-library(mapview)
-library(dplyr)
-
+##Concatenates all used columns into one vector.
 activity_cols <- c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION",
              "NON-MOTORIZED BOATING","DAY USE AREA","PADDLE BOATING",
            "WATER ACCESS","RAFTING","WHITEWATER RAFTING","BIRDING",
@@ -262,19 +254,19 @@ activity_cols <- c("CAMPING","WATER SPORTS","ENVIRONMENTAL EDUCATION",
             "OFF HIGHWAY VEHICLE","RECREATIONAL VEHICLES",
               "PHOTOGRAPHY","CLIMBING","HUNTING","WILDERNESS",
              "INFORMATION SITE","PICNICKING")
-
+##Creates a data frame from BLM data filtering out rows that do not have Lat. Long. coordinates (there were 4 variables with this) and sums the 1 values across activity_cols.
 df <- BLM |>
   filter(Latitude != 0) |>
   mutate(
     activity_count = rowSums(
       across(all_of(activity_cols)) == 1,
       na.rm = TRUE))
-
+##Specifies that each point is at the Longitude and Latitude given in their respective columns.
 points_sdf <- st_as_sf(
   df,
   coords = c("Longitude", "Latitude"),
   crs = 4326)
-
+##Creates the map itself, sizing each point to number of activities and applying a color gradient. Additionally allows one to hover over point to get site name and click on point to pull up more information.
 mapview(
   points_sdf,
   zcol = "activity_count",
@@ -283,10 +275,6 @@ mapview(
   legend = TRUE,
   label = points_sdf$Name,
   layer.name = "Total Activity Count")
-```
-
-```{r}
-colnames(BLM)
 ```
 
 Query Colorado Public Land
