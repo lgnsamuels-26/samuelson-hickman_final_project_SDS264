@@ -90,7 +90,7 @@ What sites have certain activities?
 #### Data Attribution
 
 + Data from scraped from [BLM Programs](https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=&page=) 
-+ Visit our [GitHub!]()
++ Visit our [GitHub!](https://github.com/lgnsamuels-26/samuelson-hickman_final_project_SDS264)
 
 #### About Us
 
