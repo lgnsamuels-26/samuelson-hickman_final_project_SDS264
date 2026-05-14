@@ -15,6 +15,7 @@ BLM <- read_csv("blm_colorado_3.csv")
 
 
 BLM <- BLM |>
+  select(-c(...1, ContactRegion, `SENIC DRIVE`))|>
   mutate(Description = str_replace(Description, "^Overview",""))|>
   rename(`Address 1` = `Address_1`,
          `Address 2` = `Address_2`,

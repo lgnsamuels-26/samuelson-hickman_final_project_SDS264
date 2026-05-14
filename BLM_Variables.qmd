@@ -136,7 +136,7 @@ filter(is.na(Activities))
 ```{r}
 
 blm_colorado_2 <- blm_colorado_2|>
-  mutate(total_activities = rowSums(across(c(20:46))))
+  mutate(total_activities = rowSums(across(c(CAMPING:PICNICKING))))
 
 ```
 
