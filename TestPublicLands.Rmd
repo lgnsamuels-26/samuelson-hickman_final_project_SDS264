@@ -67,11 +67,12 @@ About The Project
 Column {data-width = 300}
 -------------------------
 <br> 
-<br>
 
 #### What Are We Investigating?
 
 The Bureau of Land Management manages 245 million acres of land across the US, measuring a tenth of America's land. While BLM public lands are less visited than national parks, they are known for offering more activities with less restrictions. In 2024, BLM public lands hosted 80 million visitors. Colorado has over 150 BLM public lands sites varying from museums to open wilderness, to trail systems and boat access points. Some dashboards exist for finding public lands based on activities, but they have limited info on filtering sites and measuring characteristics, like the number of activities and description length. 
+
+#### Why Is This Important?
 
 A better dashboard would allow potential visitors to plan trips better-- understanding what different sites have to offer. This dashboard can help data scientists too, by mapping  sites and analyzing whether there are meta-relationships between description length and activity count, among other analysis
 
@@ -89,15 +90,32 @@ What sites have certain activities?
 #### Data Attribution
 
 + Data from scraped from [BLM Programs](https://www.blm.gov/visit/search?field_location=100035&field_activities=All&search_api_fulltext=&page=) 
++ Visit our [GitHub!]()
 
-Column {data-width = 100}
+#### About Us
+
+Max Hickman 
+
++ Environmental Studies Major
++ St. Olaf College
++ Class of 2027
+
+Logan Samuelson 
+
++ Quantitative Economics and Environmental Studies Major
++ St. Olaf College
++ Class of 2026
+
+Our project was completed as the final project of SDS 264: Data Science II
+
+Column {data-width = 200, data-align = "center"}
 -------------------------
-<br> 
 <br>
 
-```{r  fig.width = 4, fig.height = 4, fig.cap = "Penitente Canyon"}
+```{r, fig.align='center', fig.width = 4, fig.height = 4, fig.cap = "[Penitente Canyon](https://www.southfork.org/penitente-canyon)"}
 include_graphics("PenitenteCanyon.jpg") 
 ```
+
 
 
 Visualizations
@@ -111,7 +129,7 @@ ROW {.tabset .tabset-fade}
 
 ```{r}
 ui <- fluidPage(
-  titlePanel("Pie Chart of Existance of Activity"),
+  titlePanel("Pie Chart of Existence of Activity"),
   
 sidebarLayout(
   sidebarPanel(
@@ -358,6 +376,7 @@ Inputs {.sidebar}
 -------------------------
 
 ```{r}
+## This makes at id called "text", where users see "Text Counts." Choices, which are numeric are available.
 inputPanel(
       selectInput(inputId = "text",
                   label = h3("Text Counts"),
@@ -366,6 +385,7 @@ inputPanel(
                               "Direction Character Length",
                               "Direction Word Count"),
                   selected = "Description Word Count"))
+## This allows the user to select the categorical variables that we want to find distributions for. 
 selectInput(
   inputId  ="categ",
   label   = "Filter Sites",
@@ -406,7 +426,7 @@ renderPlot(
 <br>
 Results show that there are not strong relationships between the amount of activities offered and description word count. This makes sense considering that sites with few activities, which represent most sites, have a lower and tighter distribution of description word count.
 
-For Contact Regions, which represent sites with the same phone number, there is variation between sites' median description word counts and their spread.This suggests that certain regions, like Region 15, likely have field offices that tend to write more on their sites' webpages.
+For Contact Regions, which represent sites with the same phone number, there is variation between sites' median description word counts and their spread. This suggests that certain regions, like Region 15, likely have field offices that tend to write more on their sites' webpages.
 
 Zip Codes show some variation, but are less interesting for analysis. Some Zip Codes have more sites than another, similar to Contact Regions, but a field office is a better explanation of this trend than an unrelated geographic boundary.
 
