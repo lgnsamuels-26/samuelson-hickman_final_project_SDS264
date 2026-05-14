@@ -137,7 +137,6 @@ filter(is.na(Activities))
 
 blm_colorado_2 <- blm_colorado_2|>
   mutate(total_activities = rowSums(across(c(CAMPING:PICNICKING))))
-
 ```
 
 #Var. 3 Type of Attraction
