@@ -74,7 +74,7 @@ The Bureau of Land Management manages 245 million acres of land across the US, m
 
 #### Why Is This Important?
 
-A better dashboard would allow potential visitors to plan trips better-- understanding what different sites have to offer. This dashboard can help data scientists too, by mapping  sites and analyzing whether there are meta-relationships between description length and activity count, among other analysis
+A better dashboard would allow potential visitors to plan trips better-- understanding what different sites have to offer. This dashboard can help data scientists too, by mapping  sites and analyzing whether there are meta-relationships between description length and activity count, among other analysis.
 
 + [BLM Visitor Info](https://www.blm.gov/blog/2025-06-26/blm-public-lands-know-you-go)
 + [BLM Overview](https://www.blm.gov/about/what-we-manage/national)
@@ -124,7 +124,7 @@ Visualizations
 Column {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
-### Total Presence of activity
+### Total Presence of Activity
 Here we can investigate the proportion of each activity type occurring throughout BLM land in Colorado. It becomes evident that many of the activities are not very prevalent across BLM specific sites.
 ```{r}
 #setting up pie chart user interface.
@@ -167,7 +167,7 @@ shinyApp(ui = ui, server = server)
 ```
 
 ### Total Presence of Each Activity
-This histogram reveals to us that the most common activity listed at BLM sites is Hiking with Camping as a close second. Finally, more specialized activities like boating or birding are much less prevalent. 
+This bar plot reveals to us that the most common activity listed at BLM sites is Hiking with Camping as a close second. Finally, more specialized activities like boating or birding are much less prevalent. 
 ```{r}
 ##Creates user interface and sizing(non-interactive).
 ui <- fluidPage(
